@@ -1,0 +1,208 @@
+/*
+ * Scrapbook desk. Plain CSS.
+ *
+ * Two layouts share one DOM:
+ *   wide   (landscape, >= 820px)  the Figma frame (1916 x 1187), scaled to fit the screen
+ *   narrow (phones, portrait tablets) a 430-unit portrait collage, capped at 720px wide
+ * --ux is "one layout unit" in px, so every piece scales with the screen.
+ */
+.desk{
+  --ink:#3b3140;--cream:#f7efde;--rust:#a64b43;--tan:#49372f;--soft:#6b6070;--dot:#f5e6d3;
+  --W:min(100vw,720px);
+  --ux:calc(var(--W)/430);
+  --p:calc(var(--ux)*.6);           /* unit for the torn corners + polka dots */
+  --stageH:calc(1270*var(--ux));
+  position:relative;min-height:100dvh;display:grid;place-items:start center;overflow-x:clip;
+  background-color:#665a7a;
+  background-image:radial-gradient(circle,var(--dot) calc(11*var(--p)),transparent calc(12*var(--p))),radial-gradient(circle,var(--dot) calc(11*var(--p)),transparent calc(12*var(--p)));
+  background-size:calc(164*var(--p)) calc(136*var(--p));
+  background-position:calc(-73*var(--p)) calc(-53*var(--p)),calc(9*var(--p)) calc(15*var(--p));
+  padding-bottom:calc(122*var(--p));
+  color:var(--ink);font-family:var(--font-garamond),"EB Garamond",Georgia,serif;
+}
+@media (min-aspect-ratio:1/1) and (min-width:820px){
+  .desk{--W:min(100vw,max(100dvh*1.614,880px));--ux:calc(var(--W)/1916);--p:var(--ux);--stageH:calc(1187*var(--ux));place-items:center;padding-bottom:0}
+}
+:where(.desk) :where(button){font:inherit;color:inherit;margin:0;-webkit-tap-highlight-color:transparent}
+.desk :focus-visible{outline:3px solid #f0b866;outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.stage{position:relative;width:var(--W);height:var(--stageH)}
+.at{position:absolute;left:calc(var(--mx)*var(--ux));top:calc(var(--my)*var(--ux));width:calc(var(--mw)*var(--ux));aspect-ratio:var(--ar)}
+@media (min-aspect-ratio:1/1) and (min-width:820px){
+  .at{left:calc(var(--x)*var(--ux));top:calc(var(--y)*var(--ux));width:calc(var(--w)*var(--ux))}
+}
+.abs{position:absolute;display:block}
+img{-webkit-user-drag:none;user-select:none}
+
+/* ---------- torn corners ---------- */
+.torn{position:absolute;z-index:20;margin:0}
+.torn img{display:block;width:100%;height:auto}
+.torn.tl{left:0;top:0;width:calc(496*var(--p))}
+.torn.tl p{position:absolute;left:calc(237*var(--p));top:calc(31*var(--p));translate:-50% 0;margin:0;width:calc(434*var(--p));text-align:center;font-weight:500;font-size:calc(22*var(--p));line-height:1.2;color:var(--tan)}
+.torn.br{right:0;bottom:0;width:calc(349*var(--p))}
+.torn.br button{position:absolute;top:calc(62*var(--p));border:0;background:none;padding:calc(6*var(--p)) 0;cursor:pointer;color:var(--tan);font-size:calc(24*var(--p));line-height:1;text-decoration:underline;text-underline-offset:.14em;transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
+.torn.br button:hover{transform:rotate(-4deg) translateY(-2px)}
+@media (max-width:480px){.torn.br button{font-size:max(15px,calc(24*var(--p)))}.torn.tl p{font-size:max(11px,calc(22*var(--p)))}}
+
+/* ---------- stickers: tilt on hover ---------- */
+.item{border:0;background:none;padding:0;cursor:pointer;display:block}
+.item .rot{display:block;width:100%;rotate:var(--r,0deg);transition:transform .38s cubic-bezier(.3,1.7,.5,1),filter .2s}
+.item img,.deco img{display:block;width:100%;height:auto;filter:drop-shadow(0 calc(5*var(--ux)) calc(9*var(--ux)) #0004)}
+.deco{pointer-events:none}
+.deco img{filter:drop-shadow(0 calc(5*var(--ux)) calc(9*var(--ux)) #0004)}
+.item::after{content:attr(data-tip);position:absolute;left:50%;top:100%;translate:-50% .3em;padding:.1em .7em;background:var(--cream);color:#3b3140;border-radius:4px;font-size:max(14px,calc(24*var(--ux)));white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none;box-shadow:0 2px 6px #0003;z-index:30}
+.item:focus-visible::after{opacity:1}
+/* a hovered/focused sticker rises above the notepad and other stickers so its tooltip is never covered (still under the modals) */
+.item:focus-visible{z-index:50!important}
+.item:active .rot{transform:scale(.96) rotate(var(--tilt,-5deg))}
+@media (hover:hover){
+  .item:hover .rot,.item:focus-visible .rot{transform:rotate(var(--tilt,-5deg)) scale(1.07)}
+  .item:hover::after{opacity:1}
+  .item:hover{z-index:50!important}
+}
+.item:focus-visible .rot{transform:rotate(var(--tilt,-5deg)) scale(1.07)}
+@media (max-width:819px),(max-aspect-ratio:1/1){.item::after{display:none}}
+
+/* girl: pupils sit on the face but are masked to the eye whites so the glasses stay in front */
+.gl{position:relative;display:block;width:100%;container-type:inline-size}
+.gl .pm{position:absolute;inset:0;overflow:hidden;pointer-events:none;-webkit-mask:url(/scrapbook/eye-mask.png) 0 0/100% 100% no-repeat;mask:url(/scrapbook/eye-mask.png) 0 0/100% 100% no-repeat}
+.gl .pm img{position:absolute;left:7.7%;top:50%;width:84.5%;max-width:none;height:auto;filter:none;transition:transform .12s ease-out;transform:translate(calc(var(--dx,0)*4.4cqw),calc(var(--ty,0)*4.4cqw))}
+
+/* ---------- denim patch + skill logos ---------- */
+.patch{container-type:inline-size}
+.patch .bg{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 calc(8*var(--ux)) calc(12*var(--ux)) #2a203066)}
+.nameplate{position:absolute;display:block;height:auto;overflow:visible;rotate:-1.6deg;pointer-events:none;z-index:2}
+.np-word{font-family:var(--font-garamond),"EB Garamond",Georgia,serif;font-weight:500;font-size:34px;letter-spacing:.3em;text-indent:.3em}
+/* logos sit straight on the denim, die-cut sticker style: a thin cream rim keeps blue logos readable on blue cloth */
+.tool{position:absolute;aspect-ratio:1;border:0;background:none;padding:0;display:grid;place-items:center;cursor:pointer;rotate:-.92deg;transition:transform .3s cubic-bezier(.3,1.7,.5,1)}
+.tool img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;
+  filter:drop-shadow(.6cqw 0 0 #f7efde) drop-shadow(-.6cqw 0 0 #f7efde) drop-shadow(0 .6cqw 0 #f7efde) drop-shadow(0 -.6cqw 0 #f7efde) drop-shadow(0 .7cqw 1cqw #1d2a4488)}
+.tool:active{transform:scale(.94) rotate(-6deg)}
+.tool[aria-pressed="true"]{transform:rotate(-5deg) scale(1.1)}
+.tool[aria-pressed="true"]::after{content:"";position:absolute;inset:-6%;border:3px solid #f6efe4;border-radius:50%;pointer-events:none;opacity:.9}
+@media (hover:hover){.tool:hover{transform:rotate(-7deg) scale(1.13)}}
+.tool:focus-visible{transform:rotate(-7deg) scale(1.13)}
+
+/* ---------- pad: paper + grid sheet + folders ---------- */
+.pad{--d:calc(var(--mw)*var(--ux)/662);pointer-events:none}
+@media (min-aspect-ratio:1/1) and (min-width:820px){.pad{--d:calc(var(--w)*var(--ux)/662)}}
+.pad>*{pointer-events:auto}
+.pad>img{pointer-events:none;filter:drop-shadow(0 calc(8*var(--d)) calc(12*var(--d)) #2a203055);width:auto}
+.pad>img.abs{height:auto}
+.sheet{border-radius:calc(47*var(--d));background-color:#f7efde;pointer-events:none;
+  background-image:linear-gradient(#6377821f 1px,transparent 1px),linear-gradient(90deg,#6377821f 1px,transparent 1px);
+  background-size:calc(36*var(--d)) calc(36*var(--d));box-shadow:0 calc(4*var(--d)) calc(14*var(--d)) #2a203040}
+.fold{position:absolute;border:0;background:none;padding:0;cursor:pointer;display:grid;justify-items:center;gap:calc(4*var(--d));color:#3b3140;font-size:calc(26*var(--d));line-height:1.1;rotate:3.68deg;transition:transform .35s cubic-bezier(.3,1.7,.5,1)}
+.fold svg{width:calc(100*var(--d)*1.0);width:91.7%;height:auto;filter:drop-shadow(0 calc(3*var(--d)) calc(4*var(--d)) #0003);transition:transform .3s cubic-bezier(.3,1.7,.5,1)}
+.fold:active{transform:scale(.94) rotate(var(--tilt,5deg))}
+@media (hover:hover){.fold:hover{transform:translateY(calc(-6*var(--d))) rotate(var(--tilt,5deg)) scale(1.08)}}
+.fold:focus-visible{transform:translateY(calc(-6*var(--d))) rotate(var(--tilt,5deg)) scale(1.08)}
+.pad .item{position:absolute}
+.pad .item img{filter:drop-shadow(0 calc(4*var(--d)) calc(6*var(--d)) #0004)}
+@media (max-width:819px),(max-aspect-ratio:1/1){.fold{font-size:max(14px,calc(26*var(--d)))}}
+
+/* ---------- sticky note (tools) ---------- */
+.sticky{position:absolute;z-index:60;left:calc(494*var(--ux));top:calc(985*var(--ux));width:calc(330*var(--ux));min-height:calc(150*var(--ux));padding:calc(22*var(--ux)) calc(26*var(--ux)) calc(20*var(--ux));background:#fdf3cf;border-radius:4px;filter:drop-shadow(0 calc(8*var(--ux)) calc(9*var(--ux)) #1a122952);animation:stick .35s cubic-bezier(.3,1.6,.5,1);transform-origin:70% 0}
+.sticky b{display:block;font-weight:500;font-size:calc(29*var(--ux));margin-bottom:calc(14*var(--ux))}
+.sticky p{margin:0;font-size:calc(22*var(--ux));line-height:1.27}
+.sticky .tape{position:absolute;right:calc(26*var(--ux));top:calc(-20*var(--ux));width:calc(96*var(--ux));height:calc(30*var(--ux));background:#d9c8cfe6;rotate:-4deg}
+.sticky .x{display:none}
+@keyframes stick{from{transform:translateY(-8px) rotate(3deg) scale(.92);opacity:0}to{transform:none;opacity:1}}
+@media (max-width:819px),(max-aspect-ratio:1/1){
+  .sticky{position:fixed;left:50%;top:auto;translate:-50% 0;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(340px,90vw);min-height:0;padding:18px 44px 16px 20px}
+  .sticky b{font-size:22px;margin-bottom:6px}
+  .sticky p{font-size:17px}
+  .sticky .tape{right:24px;top:-12px;width:70px;height:22px}
+  .sticky .x{display:block;position:absolute;right:6px;top:6px;width:36px;height:36px;border:0;background:none;font-size:26px;line-height:1;cursor:pointer}
+}
+
+/* ---------- modal layer ---------- */
+.ov{position:fixed;inset:0;z-index:100;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:12px;background:#1a122994;animation:fade .2s ease-out;overflow:auto}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes pop{from{transform:translateY(14px) rotate(-1.5deg) scale(.95);opacity:0}to{transform:none;opacity:1}}
+.x{border:0;background:none;cursor:pointer}
+
+/* notepad: narrow = flowing sheet with a tab row; wide = the Figma composition */
+.np{--n:.74px;position:relative;width:min(560px,100%);max-height:calc(100dvh - 24px);margin-top:0;min-width:0;display:flex;flex-direction:column;animation:pop .35s cubic-bezier(.3,1.4,.5,1);outline:none}
+.np-tabs{display:flex;min-width:0;gap:6px;overflow-x:auto;padding:0 2px;scrollbar-width:none;flex:none;position:relative;z-index:1}
+.np-tabs::-webkit-scrollbar{display:none}
+.np-tab{flex:none;border:0;border-radius:12px 12px 0 0;padding:calc(12*var(--n)) calc(22*var(--n));font-weight:500;font-size:calc(23*var(--n));cursor:pointer;box-shadow:0 -2px 6px #1a122933;transition:transform .25s cubic-bezier(.3,1.7,.5,1)}
+.np-tab:hover{transform:translateY(-3px)}
+.np-paper{display:none}
+.np-sheet{position:relative;z-index:2;flex:1;min-height:0;overflow:auto;background-color:#f7efde;padding:calc(40*var(--n)) calc(46*var(--n)) calc(26*var(--n));border-radius:0 0 4px 4px;box-shadow:0 6px 16px #1a122940;
+  background-image:linear-gradient(#6377821f 1px,transparent 1px),linear-gradient(90deg,#6377821f 1px,transparent 1px);background-size:calc(42*var(--n)) calc(42*var(--n));animation:fade .25s ease-out}
+.np-clip{display:none;position:absolute;z-index:3;top:34px;left:62%;width:92px;translate:-50% 0;pointer-events:none;filter:drop-shadow(0 6px 6px #0004)}
+.np-sheet h2{margin:0;font-weight:500;font-size:calc(48*var(--n));line-height:1.1}
+.np-sheet .sub{margin:calc(8*var(--n)) 0 calc(24*var(--n));font-style:italic;color:var(--soft);font-size:calc(21*var(--n));padding-bottom:calc(24*var(--n));border-bottom:1px solid #8a7f8a73}
+.np-sheet .x{position:absolute;right:calc(14*var(--n));top:calc(12*var(--n));width:34px;height:34px;font-size:26px;line-height:1;color:var(--soft)}
+.np-body{font-size:calc(21*var(--n));line-height:1.33}
+.np-body p{margin:0 0 .7em}
+.np-body i{display:block;font-style:italic;color:var(--soft);font-size:calc(19*var(--n))}
+.np-body b{font-weight:500;font-size:calc(28*var(--n));display:block}
+.np-body .entry{padding:calc(14*var(--n)) 0;border-bottom:1px solid #8a7f8a73}
+.np-body .entry p{margin:.35em 0 0}
+.np-body .fine{font-size:calc(17*var(--n));color:var(--soft);margin-top:1em}
+.acc{border-bottom:1px solid #8a7f8a73}
+.acc summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;padding:calc(14*var(--n)) 0;gap:12px}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary::after{content:"+";color:var(--rust);font-size:calc(30*var(--n));line-height:1;transition:transform .3s cubic-bezier(.3,1.7,.5,1)}
+.acc[open] summary::after{content:"−";transform:rotate(180deg)}
+.acc summary:hover b{color:var(--rust)}
+.acc p{margin:0 0 calc(18*var(--n));animation:fade .25s ease-out}
+.np-body .stack{margin:.35em 0 .4em;font-size:calc(18*var(--n));color:var(--soft)}
+.np-body .stack span{font-weight:500;color:var(--ink)}
+.np-body a.lnk,.np-body .entry>a.lnk{color:var(--rust);text-decoration:underline;text-underline-offset:.16em;overflow-wrap:anywhere}
+.np-body a.lnk:hover{color:var(--ink)}
+.todo,.muted{color:var(--soft);font-style:italic}
+.btn{display:inline-block;margin-top:.3em;padding:.35em 1.1em;background:var(--rust);color:#fff;border-radius:4px;text-decoration:none;transition:transform .3s cubic-bezier(.3,1.7,.5,1)}
+.btn:hover{transform:rotate(-3deg) scale(1.05)}
+.hint{margin:calc(18*var(--n)) 0 0;text-align:right;font-style:italic;color:var(--soft);font-size:calc(17*var(--n))}
+
+@media (min-width:761px) and (min-height:640px){
+  .np{--n:min(1px,calc(100vw/1000),calc(100dvh/1040));display:block;width:calc(930*var(--n));height:calc(1000*var(--n));max-height:none;margin-top:0;
+    translate:0 calc(-35.5*var(--n)) /* the drawn pad (pin top to paper bottom) sits low inside its box; lift it so the visible piece is centred */}
+  .np-tabs{display:contents}
+  .np-tab{position:absolute;left:calc(758*var(--n));width:calc(150*var(--n));height:calc(56*var(--n));padding:0 0 0 calc(26*var(--n));text-align:left;border-radius:0 calc(14*var(--n)) calc(14*var(--n)) 0;box-shadow:0 3px 8px #1a122933;transition:transform .3s cubic-bezier(.3,1.7,.5,1),width .3s cubic-bezier(.3,1.7,.5,1)}
+  .np-tab:nth-child(1){top:calc(305*var(--n))}.np-tab:nth-child(2){top:calc(377*var(--n))}.np-tab:nth-child(3){top:calc(449*var(--n))}
+  .np-tab:nth-child(4){top:calc(521*var(--n))}.np-tab:nth-child(5){top:calc(593*var(--n))}.np-tab:nth-child(6){top:calc(665*var(--n))}
+  .np-tab[aria-selected="true"]{width:calc(172*var(--n))}
+  .np-tab:hover{transform:translateX(calc(6*var(--n)))}
+  .np-paper{display:block;position:absolute;left:0;top:calc(219*var(--n));width:calc(780*var(--n));height:calc(739*var(--n))}
+  .np-sheet{position:absolute;left:calc(45*var(--n));top:calc(346*var(--n));width:calc(700*var(--n));height:calc(650*var(--n));rotate:1.2deg;border-radius:0;padding:calc(40*var(--n)) calc(52*var(--n)) calc(20*var(--n));background-size:calc(42*var(--n)) calc(42*var(--n));box-shadow:0 6px 16px #1a122940}
+  .np-clip{display:block;top:0;left:calc(314*var(--n));width:calc(519*var(--n));translate:none}
+  .np-sheet .sub{margin-bottom:calc(20*var(--n))}
+  .np-sheet .x{top:calc(122*var(--n))}
+}
+
+/* envelope: slides in from a screen edge and rests half off-screen; the chosen sticker stays lit above the dim layer */
+.item.on{z-index:110!important}
+.ov.card{display:block;padding:0;overflow:hidden}
+.env{--ew:min(120vw,620px,calc(80dvh*724/754));position:absolute;width:var(--ew);aspect-ratio:724/754;container-type:inline-size;outline:none;animation:slide .5s cubic-bezier(.2,.9,.3,1.08) both}
+@media (min-aspect-ratio:1/1) and (min-width:820px){.env{--ew:min(calc(724*var(--ux)),calc(90dvh*724/754))}}
+.env>img{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 10px 18px #0006)}
+.env-txt{position:absolute;left:8%;top:28%;width:54%;height:50%;overflow:auto;font-size:max(13.5px,2.6cqw);line-height:1.3;color:var(--ink)}
+/* thin, rounded scrollbar shared by envelope letters and the notepad sheet */
+@supports not selector(::-webkit-scrollbar){.env-txt,.np-sheet{scrollbar-width:thin;scrollbar-color:#655a7c transparent}} /* Firefox */
+.env-txt::-webkit-scrollbar,.np-sheet::-webkit-scrollbar{width:8px;height:8px}
+.env-txt::-webkit-scrollbar-track,.np-sheet::-webkit-scrollbar-track{background:transparent}
+.env-txt::-webkit-scrollbar-thumb,.np-sheet::-webkit-scrollbar-thumb{background:#655a7c;border:2px solid transparent;background-clip:padding-box;border-radius:999px}
+.env-txt::-webkit-scrollbar-button,.np-sheet::-webkit-scrollbar-button{display:none;width:0;height:0}
+.env-txt h2{margin:0 0 .45em;font-weight:500;font-size:max(17px,3.8cqw);line-height:1.1}
+.env-txt p{margin:0 0 .6em}
+.env-txt figure{margin:.2em 0 .8em}
+.env-txt figure img{display:block;width:100%;height:auto;border-radius:4px;box-shadow:0 2px 6px #0003}
+.env-txt figcaption{margin-top:.4em;font-size:.82em;font-style:italic;color:var(--soft)}
+.env.r{right:calc(var(--ew)*-.10);top:50%;translate:0 -50%;--fx:100%;--fy:0%}
+.env.l{left:calc(var(--ew)*-.10);top:50%;translate:0 -50%;--fx:-100%;--fy:0%}
+.env.br{right:calc(var(--ew)*-.10);bottom:calc(var(--ew)*-.12);--fx:100%;--fy:40%}
+.env.tl{left:calc(var(--ew)*-.10);top:calc(var(--ew)*-.12);--fx:-100%;--fy:-40%}
+/* left-side envelopes are mirrored so the card faces the screen */
+.env.l>img,.env.tl>img{transform:scaleX(-1)}
+.env.l .env-txt,.env.tl .env-txt{left:auto;right:8%}
+@keyframes slide{from{transform:translate(var(--fx),var(--fy));opacity:0}to{transform:none;opacity:1}}
+
+@media (prefers-reduced-motion:reduce){
+  .desk *,.ov *{animation:none!important;transition:none!important}
+  .item:hover .rot,.fold:hover,.tool:hover{transform:none!important}
+}
